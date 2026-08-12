@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "Mini ERP CRM Operations Portal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "token", "value": "" },
+    { "key": "customerId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "challanId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"admin@mini-erp.test\",\"password\":\"Password@123\"}"
+        }
+      }
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/dashboard"
+      }
+    },
+    {
+      "name": "List Customers",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/customers?page=1&pageSize=10"
+      }
+    },
+    {
+      "name": "Create Customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/customers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"New Buyer\",\"mobile\":\"9000000001\",\"email\":\"buyer@example.com\",\"businessName\":\"Buyer Stores\",\"type\":\"RETAIL\",\"address\":\"Main Road\",\"status\":\"LEAD\",\"notes\":\"Needs follow up\"}"
+        }
+      }
+    },
+    {
+      "name": "List Products",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/products?page=1&pageSize=10"
+      }
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Sample Product\",\"sku\":\"SAMPLE-001\",\"category\":\"Demo\",\"unitPrice\":100,\"currentStock\":40,\"minStock\":5,\"location\":\"Warehouse A\"}"
+        }
+      }
+    },
+    {
+      "name": "Create Challan",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/challans",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerId\":\"{{customerId}}\",\"status\":\"DRAFT\",\"items\":[{\"productId\":\"{{productId}}\",\"quantity\":2}]}"
+        }
+      }
+    },
+    {
+      "name": "Confirm Challan",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/challans/{{challanId}}/confirm"
+      }
+    }
+  ]
+}
