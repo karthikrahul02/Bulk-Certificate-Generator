@@ -1,104 +1,158 @@
 # Bulk Certificate Generator
 
-Backend-focused assignment implementation for bulk certificate generation. The API accepts one job containing many recipients, validates each recipient, generates certificate PNGs from a single predefined template, tracks progress, records per-recipient failures, and exposes generated files for retrieval.
+A simple tool for generating certificates in bulk from a predefined
+certificate template and a list of recipients.
 
-The project also includes a polished React UI for manually submitting jobs and demonstrating the workflow.
+> **Status:** Initial project setup. The repository is currently being
+> built.
 
-## Tech Stack
+## Overview
 
-- Backend: Python, FastAPI, SQLAlchemy, SQLite, Pillow
-- Frontend: React, TypeScript, Vite, CSS 3D visuals
-- Tests: Python `unittest` with FastAPI `TestClient`
+Creating certificates one by one is repetitive and time-consuming,
+especially for workshops, hackathons, webinars, courses, college events,
+and other programs with many participants.
 
-## Requirements Covered
+**Bulk Certificate Generator** is intended to automate this process by
+allowing you to provide recipient details once and generate personalized
+certificates in bulk.
 
-- Bulk job submission through `POST /jobs`
-- Recipient-level validation with isolated failures
-- Predefined certificate template rendered with Pillow
-- Relational storage for jobs and recipient results
-- Progress/status endpoint through `GET /jobs/{job_id}`
-- Generated certificate retrieval through `GET /jobs/{job_id}/certificates/{recipient_id}`
-- Tests for job creation, input validation, generation, progress, individual failures, and retrieval
+## Planned Features
 
-## Local Setup
+-   Generate certificates for multiple recipients in one run
+-   Use a customizable certificate template
+-   Automatically insert recipient names and other certificate details
+-   Support structured recipient data such as CSV files
+-   Save generated certificates to an output directory
+-   Reduce repetitive manual certificate creation
+-   Provide a simple workflow suitable for events and academic programs
 
-Python dependencies are listed in `backend/requirements.txt`.
+## How It Works
 
-```bash
-cd backend
-python -m pip install -r requirements.txt
+The planned workflow is:
+
+``` text
+Certificate Template
+        +
+Recipient Data (CSV / Spreadsheet)
+        |
+        v
+Bulk Certificate Generator
+        |
+        v
+Personalized Certificates
+        |
+        v
+Output Directory
 ```
 
-Install frontend dependencies from the repository root if needed:
+## Example Input
 
-```bash
-npm install
+A recipient CSV could look like:
+
+``` csv
+name,course,date
+Rahul Kumar,Python Workshop,October 7 2026
+Ananya Sharma,Python Workshop,October 7 2026
+Arjun Rao,Python Workshop,October 7 2026
 ```
 
-## Run The Application
+The generator can use each row to create a personalized certificate.
 
-From the repository root:
+## Example Output
 
-```bash
-npm run dev
+``` text
+output/
+├── Rahul_Kumar.pdf
+├── Ananya_Sharma.pdf
+└── Arjun_Rao.pdf
 ```
 
-Backend: `http://localhost:4000`  
-Frontend: `http://localhost:5173`
+## Getting Started
 
-You can also run only the backend:
+The implementation is currently under development.
 
-```bash
-cd backend
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 4000
+Once the project structure and dependencies are added, setup
+instructions will be provided here.
+
+A typical workflow will be:
+
+``` bash
+# Clone the repository
+git clone https://github.com/karthikrahul02/Bulk-Certificate-Generator.git
+
+# Enter the project directory
+cd Bulk-Certificate-Generator
+
+# Install dependencies
+# Add the project-specific installation command here
+
+# Run the application
+# Add the project-specific run command here
 ```
 
-## Run Tests
+## Project Structure
 
-```bash
-npm test
+The project structure will be documented as the implementation is added.
+
+A possible structure is:
+
+``` text
+Bulk-Certificate-Generator/
+├── templates/          # Certificate templates
+├── input/              # Recipient data
+├── output/             # Generated certificates
+├── src/                # Application source code
+├── requirements.txt    # Python dependencies
+└── README.md
 ```
 
-or:
+## Use Cases
 
-```bash
-cd backend
-python -m unittest discover -s tests -p "test_*.py"
-```
+This project can be useful for:
 
-## Submit A Certificate Generation Request
+-   College events
+-   Hackathons
+-   Workshops
+-   Webinars
+-   Online courses
+-   Training programs
+-   Internships
+-   Competitions
+-   Participation and achievement certificates
 
-PowerShell example:
+## Roadmap
 
-```powershell
-$body = @{
-  event_name = "Backend Cohort"
-  course_name = "FastAPI Fundamentals"
-  issued_on = "2026-10-07"
-  recipients = @(
-    @{ name = "Asha Rao"; email = "asha@example.com" },
-    @{ name = "Dev Patel"; email = "dev@example.com"; certificate_title = "Certificate of Excellence" }
-  )
-} | ConvertTo-Json -Depth 4
+-   [ ] Add certificate template support
+-   [ ] Add CSV recipient-data support
+-   [ ] Implement dynamic text replacement
+-   [ ] Generate certificates in bulk
+-   [ ] Add PDF export
+-   [ ] Add customizable certificate fields
+-   [ ] Add input validation and error handling
+-   [ ] Add a simple web interface
+-   [ ] Add preview functionality
+-   [ ] Add documentation and examples
 
-Invoke-RestMethod -Method Post -Uri "http://localhost:4000/jobs" -ContentType "application/json" -Body $body
-```
+## Contributing
 
-Response includes the job id, status, counts, progress, per-recipient result records, and `download_url` values for generated certificates.
+Contributions, ideas, and improvements are welcome.
 
-## Retrieve Status And Certificates
+1.  Fork the repository.
+2.  Create a feature branch.
+3.  Make your changes.
+4.  Test the changes.
+5.  Open a pull request.
 
-```bash
-curl http://localhost:4000/jobs/{job_id}
-curl -L http://localhost:4000/jobs/{job_id}/certificates/{recipient_id} --output certificate.png
-```
+## License
 
-Generated files are stored under `backend/generated_certificates` by default. Set `CERTIFICATE_OUTPUT_DIR` to change that location.
+A license will be added to the project as the repository develops.
 
-## Design Decisions
+## Author
 
-- Generation is synchronous for this assignment. It keeps the implementation easy to run and explain while still modeling a durable job/result workflow. The service boundary in `backend/app/service.py` can be moved to a queue worker later without changing the API contract.
-- SQLite is used as the relational database for frictionless local setup. SQLAlchemy keeps the persistence layer portable if PostgreSQL is required later.
-- Recipient validation is performed per recipient during processing, so a bad row does not reject the whole bulk job.
-- Certificate generation uses one predefined Pillow template, matching the assignment requirement to avoid a template editor or multiple designs.
-- A deterministic `FAIL_CERTIFICATE` recipient name is supported only to test individual certificate generation failure behavior.
+**Rahul**
+
+GitHub: [@karthikrahul02](https://github.com/karthikrahul02)
+
+------------------------------------------------------------------------
+
+If you find this project useful, consider giving the repository a star.
