@@ -1,30 +1,16 @@
 # Architecture
 
-## Modules
+Request flow:
 
-- Auth: JWT login and role claims.
-- Customers: CRM records, search, detail, and follow-up notes.
-- Products: Inventory master data and stock thresholds.
-- Stock Movements: Audit trail for IN and OUT changes.
-- Challans: Sales dispatch flow with draft, confirmed, and cancelled statuses.
-- Dashboard: Aggregated operational metrics from real backend data.
+`FastAPI route -> Pydantic request validation -> Certificate service -> SQLAlchemy models -> SQLite -> Pillow certificate renderer`
 
-## Data Model
+The API creates a durable job and recipient rows before processing. Processing then validates each recipient independently. Valid recipients are rendered to PNG files and marked `GENERATED`; invalid rows or rendering failures are marked `FAILED` with an error message.
 
-- One customer can have many follow-ups and challans.
-- One product can have many stock movements and challan items.
-- One challan contains many challan items.
-- Challan items keep product snapshots so historical documents remain accurate after product changes.
+Status is derived from recipient outcomes:
 
-## Critical Transaction
+- `COMPLETED`: every recipient generated successfully
+- `COMPLETED_WITH_ERRORS`: at least one generated and at least one failed
+- `FAILED`: every recipient failed
+- `PROCESSING`: reserved for active processing
 
-Challan confirmation runs inside a Prisma transaction:
-
-1. Load challan and item records.
-2. Validate the challan is still draft.
-3. Validate each product has enough stock.
-4. Decrement product stock.
-5. Create OUT stock movements.
-6. Mark challan confirmed.
-
-If any step fails, no stock or challan change is committed.
+The service is synchronous by design for the assignment. The same `process_job` boundary can later be called from a background worker or queue without changing the public API.

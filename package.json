@@ -1,5 +1,5 @@
 {
-  "name": "mini-erp-crm-portal",
+  "name": "bulk-certificate-generator",
   "version": "1.0.0",
   "private": true,
   "workspaces": [
@@ -9,9 +9,9 @@
   "scripts": {
     "install:all": "npm install --workspaces",
     "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
-    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "build": "npm run typecheck --workspace backend && npm run build --workspace frontend",
     "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
-    "seed": "npm run seed --workspace backend"
+    "test": "npm run test --workspace backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

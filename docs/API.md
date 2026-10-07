@@ -1,132 +1,57 @@
-# API Documentation
+# API
 
 Base URL: `http://localhost:4000`
 
-Use `Authorization: Bearer <token>` for all endpoints except login.
+## Health
 
-## Authentication
-
-### POST /auth/login
+`GET /health`
 
 ```json
 {
-  "email": "admin@mini-erp.test",
-  "password": "Password@123"
+  "ok": true,
+  "service": "bulk-certificate-generator"
 }
 ```
 
-Returns a JWT token and user profile.
+## Create Job
 
-## Dashboard
-
-### GET /dashboard
-
-Returns live metrics, low-stock products, recent challans, and recent stock movements.
-
-## Customers
-
-### GET /customers?search=mehta&page=1&pageSize=10
-
-Returns paginated customer records.
-
-### POST /customers
-
-Roles: Admin, Sales.
+`POST /jobs`
 
 ```json
 {
-  "name": "Ravi Mehta",
-  "mobile": "9876543210",
-  "email": "ravi@example.com",
-  "businessName": "Mehta Traders",
-  "gstNumber": "29ABCDE1234F1Z5",
-  "type": "WHOLESALE",
-  "address": "Market Road, Bengaluru",
-  "status": "LEAD",
-  "notes": "Interested in bulk pricing"
-}
-```
-
-### POST /customers/:id/follow-ups
-
-Roles: Admin, Sales.
-
-```json
-{
-  "note": "Called customer and shared revised quote.",
-  "nextDate": "2026-08-20T10:00:00.000Z"
-}
-```
-
-## Products
-
-### GET /products?search=rice&page=1&pageSize=10
-
-Returns paginated product records.
-
-### POST /products
-
-Roles: Admin, Warehouse.
-
-```json
-{
-  "name": "Premium Basmati Rice",
-  "sku": "BAS-RICE-25",
-  "category": "Grains",
-  "unitPrice": 1850,
-  "currentStock": 120,
-  "minStock": 25,
-  "location": "Warehouse A"
-}
-```
-
-### POST /products/:id/stock-movements
-
-Roles: Admin, Warehouse.
-
-```json
-{
-  "quantity": 25,
-  "type": "IN",
-  "reason": "New purchase received"
-}
-```
-
-OUT movements are rejected if stock would become negative.
-
-## Challans
-
-### GET /challans?status=DRAFT&page=1&pageSize=10
-
-Returns challans with customer and item snapshots.
-
-### POST /challans
-
-Roles: Admin, Sales.
-
-```json
-{
-  "customerId": "customer-id",
-  "status": "DRAFT",
-  "items": [
+  "event_name": "Backend Cohort",
+  "course_name": "FastAPI Fundamentals",
+  "issued_on": "2026-10-07",
+  "recipients": [
     {
-      "productId": "product-id",
-      "quantity": 5
+      "name": "Asha Rao",
+      "email": "asha@example.com"
+    },
+    {
+      "name": "Dev Patel",
+      "email": "dev@example.com",
+      "certificate_title": "Certificate of Excellence"
     }
   ]
 }
 ```
 
-If status is `CONFIRMED`, stock is deducted immediately.
+Returns `201` with the completed job detail for the synchronous implementation.
 
-### POST /challans/:id/confirm
+## List Jobs
 
-Roles: Admin, Sales.
+`GET /jobs`
 
-Confirms a draft challan, deducts stock, and records stock movements.
+Returns summaries for recent jobs.
 
-### POST /challans/:id/cancel
+## Get Job Status
 
-Roles: Admin, Sales.
+`GET /jobs/{job_id}`
 
-Cancels only draft challans. Confirmed challans are blocked to avoid silent inventory reversal.
+Returns status, progress, counts, recipient results, errors, and download URLs.
+
+## Retrieve Certificate
+
+`GET /jobs/{job_id}/certificates/{recipient_id}`
+
+Returns a generated `image/png` certificate. Failed recipient records do not have downloadable files.

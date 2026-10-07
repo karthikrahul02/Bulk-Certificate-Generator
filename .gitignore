@@ -4,4 +4,9 @@ dist
 .env.local
 .DS_Store
 coverage
+__pycache__/
+*.pyc
 backend/prisma/dev.db
+backend/certificate_jobs.db
+backend/generated_certificates/
+backend/tests/.tmp-certificates/

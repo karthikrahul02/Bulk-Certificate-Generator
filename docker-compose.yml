@@ -1,14 +1,3 @@
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: erp
-      POSTGRES_PASSWORD: erp_password
-      POSTGRES_DB: mini_erp
-    ports:
-      - "5432:5432"
-    volumes:
-      - mini_erp_pg:/var/lib/postgresql/data
-
-volumes:
-  mini_erp_pg:
+# SQLite is the default relational database for this assignment, so no service is required.
+# This file is intentionally minimal to avoid unnecessary setup.
+services: {}

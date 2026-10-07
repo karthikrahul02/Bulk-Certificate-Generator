@@ -1,71 +1,43 @@
-# Mini ERP + CRM Operations Portal
+# Bulk Certificate Generator
 
-Full-stack case-study implementation for a wholesale/distribution company. The system covers role-based access, customer CRM, product inventory, stock movement logs, sales challans, and a live dashboard.
+Backend-focused assignment implementation for bulk certificate generation. The API accepts one job containing many recipients, validates each recipient, generates certificate PNGs from a single predefined template, tracks progress, records per-recipient failures, and exposes generated files for retrieval.
+
+The project also includes a polished React UI for manually submitting jobs and demonstrating the workflow.
 
 ## Tech Stack
 
-- Backend: Node.js, TypeScript, Express, Prisma, PostgreSQL, JWT, Zod
-- Frontend: React, TypeScript, Vite, responsive CSS
-- Database: PostgreSQL
-- DevOps: Docker Compose for local Postgres, deployable to Render/Railway/Fly.io plus Vercel/Netlify
+- Backend: Python, FastAPI, SQLAlchemy, SQLite, Pillow
+- Frontend: React, TypeScript, Vite, CSS 3D visuals
+- Tests: Python `unittest` with FastAPI `TestClient`
 
-## Core Business Rules
+## Requirements Covered
 
-- Roles: Admin, Sales, Warehouse, Accounts.
-- Backend enforces permissions; frontend role checks are only for navigation and UX.
-- Product `currentStock` stores current inventory.
-- `StockMovement` stores historical IN/OUT stock changes.
-- Challan items store product snapshot fields: name, SKU, unit price, and quantity.
-- Confirmed challans reduce stock inside a database transaction.
-- Stock cannot become negative; insufficient stock returns HTTP `409`.
-- Confirmed challans cannot be cancelled without a separate reversal process.
-
-## Test Logins
-
-All seeded users use password `Password@123`.
-
-| Role | Email |
-| --- | --- |
-| Admin | `admin@mini-erp.test` |
-| Sales | `sales@mini-erp.test` |
-| Warehouse | `warehouse@mini-erp.test` |
-| Accounts | `accounts@mini-erp.test` |
+- Bulk job submission through `POST /jobs`
+- Recipient-level validation with isolated failures
+- Predefined certificate template rendered with Pillow
+- Relational storage for jobs and recipient results
+- Progress/status endpoint through `GET /jobs/{job_id}`
+- Generated certificate retrieval through `GET /jobs/{job_id}/certificates/{recipient_id}`
+- Tests for job creation, input validation, generation, progress, individual failures, and retrieval
 
 ## Local Setup
 
-1. Copy environment files:
+Python dependencies are listed in `backend/requirements.txt`.
 
 ```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+cd backend
+python -m pip install -r requirements.txt
 ```
 
-2. Start PostgreSQL:
-
-```bash
-docker compose up -d
-```
-
-3. Install dependencies:
+Install frontend dependencies from the repository root if needed:
 
 ```bash
 npm install
 ```
 
-4. Generate Prisma client and create tables:
+## Run The Application
 
-```bash
-npm run prisma:generate --workspace backend
-npm run prisma:migrate --workspace backend
-```
-
-5. Seed demo data:
-
-```bash
-npm run seed
-```
-
-6. Run both apps:
+From the repository root:
 
 ```bash
 npm run dev
@@ -74,71 +46,59 @@ npm run dev
 Backend: `http://localhost:4000`  
 Frontend: `http://localhost:5173`
 
-## API Overview
+You can also run only the backend:
 
-Detailed examples are in [docs/API.md](docs/API.md) and the Postman collection at [docs/postman_collection.json](docs/postman_collection.json).
+```bash
+cd backend
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 4000
+```
 
-Main endpoints:
+## Run Tests
 
-- `POST /auth/login`
-- `GET /dashboard`
-- `GET /customers`
-- `POST /customers`
-- `PUT /customers/:id`
-- `POST /customers/:id/follow-ups`
-- `GET /products`
-- `POST /products`
-- `PUT /products/:id`
-- `POST /products/:id/stock-movements`
-- `GET /products/:id/stock-movements`
-- `GET /challans`
-- `POST /challans`
-- `POST /challans/:id/confirm`
-- `POST /challans/:id/cancel`
+```bash
+npm test
+```
 
-## Deployment
+or:
 
-Free hosting options:
+```bash
+cd backend
+python -m unittest discover -s tests -p "test_*.py"
+```
 
-- Frontend: Vercel, Netlify, or Render Static Site.
-- Backend: Render, Railway, or Fly.io.
-- Database: Neon, Supabase, Render Postgres, or Railway Postgres.
+## Submit A Certificate Generation Request
 
-Backend environment variables:
+PowerShell example:
 
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `PORT`
-- `FRONTEND_ORIGIN`
+```powershell
+$body = @{
+  event_name = "Backend Cohort"
+  course_name = "FastAPI Fundamentals"
+  issued_on = "2026-10-07"
+  recipients = @(
+    @{ name = "Asha Rao"; email = "asha@example.com" },
+    @{ name = "Dev Patel"; email = "dev@example.com"; certificate_title = "Certificate of Excellence" }
+  )
+} | ConvertTo-Json -Depth 4
 
-Frontend environment variables:
+Invoke-RestMethod -Method Post -Uri "http://localhost:4000/jobs" -ContentType "application/json" -Body $body
+```
 
-- `VITE_API_URL`
+Response includes the job id, status, counts, progress, per-recipient result records, and `download_url` values for generated certificates.
 
-Deployment flow:
+## Retrieve Status And Certificates
 
-1. Provision PostgreSQL and set `DATABASE_URL`.
-2. Deploy backend with build command `npm install && npm run build --workspace backend`.
-3. Run Prisma migration on the backend environment.
-4. Set `FRONTEND_ORIGIN` to the frontend URL.
-5. Deploy frontend with `VITE_API_URL` pointing to the backend API.
+```bash
+curl http://localhost:4000/jobs/{job_id}
+curl -L http://localhost:4000/jobs/{job_id}/certificates/{recipient_id} --output certificate.png
+```
 
-## Architecture
+Generated files are stored under `backend/generated_certificates` by default. Set `CERTIFICATE_OUTPUT_DIR` to change that location.
 
-Backend request flow:
+## Design Decisions
 
-`Route -> Auth/Role Middleware -> Zod Validation -> Controller Route Handler -> Service -> Prisma -> PostgreSQL`
-
-The challan confirmation service owns the critical transaction: it validates product availability, decrements stock, records OUT movements, and updates challan status as one atomic operation.
-
-## Assumptions
-
-- Invoices and purchase orders are part of the business context, but the required modules focus on CRM, products, stock movements, and sales challans.
-- Confirmed challan cancellation needs a reversal workflow, so it is intentionally blocked.
-- Product images, PDF invoice export, S3 upload, and CI are bonus items and are not required for the core case-study flow.
-
-## Known Limitations
-
-- The frontend currently creates challans with one product line at a time; the backend already supports multiple products.
-- Search/filter/pagination is implemented on API list endpoints; the UI exposes search for customers and full list loading for products/challans.
-- No live deployment URL is included until hosting credentials/accounts are connected.
+- Generation is synchronous for this assignment. It keeps the implementation easy to run and explain while still modeling a durable job/result workflow. The service boundary in `backend/app/service.py` can be moved to a queue worker later without changing the API contract.
+- SQLite is used as the relational database for frictionless local setup. SQLAlchemy keeps the persistence layer portable if PostgreSQL is required later.
+- Recipient validation is performed per recipient during processing, so a bad row does not reject the whole bulk job.
+- Certificate generation uses one predefined Pillow template, matching the assignment requirement to avoid a template editor or multiple designs.
+- A deterministic `FAIL_CERTIFICATE` recipient name is supported only to test individual certificate generation failure behavior.
